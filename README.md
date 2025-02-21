@@ -1,6 +1,6 @@
 # Simple Routine Planner
 
-A minimalist and intuitive routine planner that helps you organize your daily activities and tasks. Built with modern web technologies and focused on user experience.
+A Routine planner app built with Next.js, shadcn/ui, and Zustand. It's a personal project to help me plan my days and tasks.
 
 ## Features
 

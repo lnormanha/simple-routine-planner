@@ -48,7 +48,6 @@ export const AddActivityModal = ({
   const [selectedDays, setSelectedDays] = useState<string[]>([day]);
   const [isNewActivity, setIsNewActivity] = useState(true);
 
-  // Get all existing activities across all days
   const existingActivities = useMemo(() => {
     const activities = new Set<string>();
     Object.values(routine.routine).forEach((dayRoutine) => {
@@ -60,7 +59,6 @@ export const AddActivityModal = ({
   }, [routine]);
 
   const handleExistingActivitySelect = (activity: string) => {
-    // Find the first occurrence of this activity to copy its properties
     for (const dayRoutine of Object.values(routine.routine)) {
       const existingItem = dayRoutine.routineItems.find(
         (item) => item.activity === activity
@@ -159,6 +157,25 @@ export const AddActivityModal = ({
             )}
           </div>
 
+          <div className="flex-1">
+            <TagInput
+              tags={newItem.tags || []}
+              onTagsChange={(tags) => setNewItem((prev) => ({ ...prev, tags }))}
+              onAddTag={addTag}
+              savedTags={savedTags}
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Label>Color:</Label>
+            <ColorPicker
+              selectedColor={newItem.color || "bg-blue-500"}
+              onColorChange={(color: string) =>
+                setNewItem((prev) => ({ ...prev, color }))
+              }
+            />
+          </div>
+
           <div className="flex flex-col gap-4">
             <Label>Add to days:</Label>
             <div className="flex flex-col gap-2">
@@ -193,24 +210,6 @@ export const AddActivityModal = ({
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Label>Color:</Label>
-            <ColorPicker
-              selectedColor={newItem.color || "bg-blue-500"}
-              onColorChange={(color: string) =>
-                setNewItem((prev) => ({ ...prev, color }))
-              }
-            />
-          </div>
-          <div className="flex-1">
-            <TagInput
-              tags={newItem.tags || []}
-              onTagsChange={(tags) => setNewItem((prev) => ({ ...prev, tags }))}
-              onAddTag={addTag}
-              savedTags={savedTags}
-            />
           </div>
 
           <div className="flex justify-end gap-2">

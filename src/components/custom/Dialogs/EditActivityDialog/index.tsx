@@ -27,7 +27,6 @@ type EditActivityDialogProps = {
 
 export const EditActivityDialog = ({
   routine,
-  day,
   activity,
   open,
   onOpenChange,
@@ -48,7 +47,6 @@ export const EditActivityDialog = ({
     if (editedItem.time && editedItem.activity && selectedDays.length > 0) {
       const updatedRoutine = { ...routine };
 
-      // First, remove the activity from all days
       Object.keys(updatedRoutine.routine).forEach((routineDay) => {
         updatedRoutine.routine[routineDay] = {
           ...updatedRoutine.routine[routineDay],
@@ -62,7 +60,6 @@ export const EditActivityDialog = ({
         };
       });
 
-      // Then add the edited activity to selected days
       selectedDays.forEach((selectedDay) => {
         updatedRoutine.routine[selectedDay] = {
           ...updatedRoutine.routine[selectedDay],
@@ -104,8 +101,8 @@ export const EditActivityDialog = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Color</Label>
+          <div className="flex flex-row gap-2 items-center">
+            <Label>Color:</Label>
             <ColorPicker
               selectedColor={editedItem.color}
               onColorChange={(color: string) =>
@@ -141,7 +138,7 @@ export const EditActivityDialog = ({
                   Select All Days
                 </label>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col gap-2">
                 {DAYS_OF_WEEK.map((dayOfWeek) => (
                   <div key={dayOfWeek} className="flex items-center gap-2">
                     <Checkbox

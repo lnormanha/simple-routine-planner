@@ -4,6 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useState } from "react";
 
 const colors = [
   "bg-red-500",
@@ -25,8 +26,15 @@ export function ColorPicker({
   selectedColor,
   onColorChange,
 }: ColorPickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleColorChange = (color: string) => {
+    onColorChange(color);
+    setIsOpen(false);
+  };
+
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -42,7 +50,7 @@ export function ColorPicker({
             <Button
               key={color}
               className={`w-8 h-8 rounded-full ${color}`}
-              onClick={() => onColorChange(color)}
+              onClick={() => handleColorChange(color)}
             />
           ))}
         </div>

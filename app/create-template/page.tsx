@@ -1,180 +1,97 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useRoutineStore } from "@/store/routineStore"
-import { RoutineCard } from "@/components/RoutineCard"
-import { AddRoutineItemModal } from "@/components/AddRoutineItemModal"
-import { AddChoreModal } from "@/components/AddChoreModal"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import type { RoutineItem, Chore, WeekRoutine } from "@/types/routine"
-import { format, startOfWeek, addDays, isSameDay } from "date-fns"
-
-const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useRoutinesStore } from "@/store/routines";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { WeekRoutine } from "@/types/routine";
+import { RoutineTemplate } from "@/components/RoutineTemplate";
+import { Card } from "@/components/ui/card";
 
 export default function CreateTemplate() {
-  const router = useRouter()
-  const { addRoutine } = useRoutineStore()
-  const [templateName, setTemplateName] = useState("")
-  const [currentRoutine, setCurrentRoutine] = useState<WeekRoutine>({
+  const router = useRouter();
+  const { addRoutine } = useRoutinesStore();
+  const [name, setName] = useState("");
+  const [routine, setRoutine] = useState<WeekRoutine>({
     id: Date.now().toString(),
     name: "",
-    routine: Object.fromEntries(daysOfWeek.map((day) => [day, { routineItems: [], chores: [] }])),
-  })
-  const [isAddRoutineItemModalOpen, setIsAddRoutineItemModalOpen] = useState(false)
-  const [isAddChoreModalOpen, setIsAddChoreModalOpen] = useState(false)
-  const [savedTags, setSavedTags] = useState<string[]>([])
-  const [savedActivities, setSavedActivities] = useState<string[]>([])
+    routine: {
+      monday: { routineItems: [], tasks: [] },
+      tuesday: { routineItems: [], tasks: [] },
+      wednesday: { routineItems: [], tasks: [] },
+      thursday: { routineItems: [], tasks: [] },
+      friday: { routineItems: [], tasks: [] },
+      saturday: { routineItems: [], tasks: [] },
+      sunday: { routineItems: [], tasks: [] },
+    },
+  });
 
-  useEffect(() => {
-    // Load saved tags and activities from localStorage
-    const storedTags = localStorage.getItem("savedTags")
-    const storedActivities = localStorage.getItem("savedActivities")
-    if (storedTags) setSavedTags(JSON.parse(storedTags))
-    if (storedActivities) setSavedActivities(JSON.parse(storedActivities))
-  }, [])
-
-  const updateTemplateName = (name: string) => {
-    setTemplateName(name)
-    setCurrentRoutine((prev) => ({ ...prev, name }))
-  }
-
-  const addRoutineItem = (item: RoutineItem, days: string[]) => {
-    setCurrentRoutine((prev) => {
-      const updatedRoutine = { ...prev }
-      days.forEach((day) => {
-        if (!updatedRoutine.routine[day]) {
-          updatedRoutine.routine[day] = { routineItems: [], chores: [] }
-        }
-        updatedRoutine.routine[day] = {
-          ...updatedRoutine.routine[day],
-          routineItems: [...updatedRoutine.routine[day].routineItems, item],
-        }
-      })
-      return updatedRoutine
-    })
-
-    // Save new activity and tags
-    if (!savedActivities.includes(item.activity)) {
-      const updatedActivities = [...savedActivities, item.activity]
-      setSavedActivities(updatedActivities)
-      localStorage.setItem("savedActivities", JSON.stringify(updatedActivities))
+  const handleSave = () => {
+    if (!name.trim()) {
+      return;
     }
-    const newTags = item.tags.filter((tag) => !savedTags.includes(tag))
-    if (newTags.length > 0) {
-      const updatedTags = [...savedTags, ...newTags]
-      setSavedTags(updatedTags)
-      localStorage.setItem("savedTags", JSON.stringify(updatedTags))
-    }
-  }
 
-  const addChore = (chore: Chore, days: string[]) => {
-    setCurrentRoutine((prev) => {
-      const updatedRoutine = { ...prev }
-      days.forEach((day) => {
-        if (!updatedRoutine.routine[day]) {
-          updatedRoutine.routine[day] = { routineItems: [], chores: [] }
-        }
-        updatedRoutine.routine[day] = {
-          ...updatedRoutine.routine[day],
-          chores: [...updatedRoutine.routine[day].chores, chore],
-        }
-      })
-      return updatedRoutine
-    })
+    const newRoutine = {
+      ...routine,
+      name: name.trim(),
+    };
 
-    // Save new task and tags
-    if (!savedActivities.includes(chore.task)) {
-      const updatedActivities = [...savedActivities, chore.task]
-      setSavedActivities(updatedActivities)
-      localStorage.setItem("savedActivities", JSON.stringify(updatedActivities))
-    }
-    const newTags = chore.tags.filter((tag) => !savedTags.includes(tag))
-    if (newTags.length > 0) {
-      const updatedTags = [...savedTags, ...newTags]
-      setSavedTags(updatedTags)
-      localStorage.setItem("savedTags", JSON.stringify(updatedTags))
-    }
-  }
+    addRoutine(newRoutine);
+    router.push("/");
+  };
 
-  const toggleChore = (day: string, choreId: string) => {
-    setCurrentRoutine((prev) => ({
-      ...prev,
-      routine: {
-        ...prev.routine,
-        [day]: {
-          ...prev.routine[day],
-          chores: prev.routine[day].chores.map((chore) =>
-            chore.id === choreId ? { ...chore, completed: !chore.completed } : chore,
-          ),
-        },
-      },
-    }))
-  }
-
-  const saveAndExit = () => {
-    if (templateName) {
-      addRoutine(currentRoutine)
-      router.push("/")
-    } else {
-      alert("Please enter a template name before saving.")
-    }
-  }
-
-  const today = new Date()
-  const weekStart = startOfWeek(today)
+  const handleRoutineChange = (newRoutine: WeekRoutine) => {
+    setRoutine(newRoutine);
+  };
 
   return (
-    <div className="container mx-auto p-4 min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">Create New Routine Template</h1>
-      <div className="mb-4">
+    <div className="container mx-auto p-4 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Create New Routine Template</h1>
+        <Button onClick={handleSave}>Save and Exit</Button>
+      </div>
+
+      <div className="flex gap-4 items-center">
         <Input
-          type="text"
           placeholder="Template Name"
-          value={templateName}
-          onChange={(e) => updateTemplateName(e.target.value)}
-          className="text-lg font-semibold"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setRoutine((prev) => ({ ...prev, name: e.target.value }));
+          }}
+          className="max-w-md"
         />
       </div>
-      <div className="mb-4 flex space-x-2">
-        <Button onClick={() => setIsAddRoutineItemModalOpen(true)}>Add Routine Item</Button>
-        <Button onClick={() => setIsAddChoreModalOpen(true)}>Add Chore</Button>
-      </div>
-      <div className="flex overflow-x-auto pb-4 space-x-4">
-        {daysOfWeek.map((day, index) => {
-          const currentDate = addDays(weekStart, index)
-          return (
-            <RoutineCard
-              key={day}
-              day={day}
-              date={format(currentDate, "MMM d")}
-              routineItems={currentRoutine.routine[day]?.routineItems || []}
-              chores={currentRoutine.routine[day]?.chores || []}
-              onChoreToggle={(choreId) => toggleChore(day, choreId)}
-              isCurrentDay={isSameDay(currentDate, today)}
-            />
-          )
-        })}
-      </div>
-      <Button onClick={saveAndExit} className="mt-4">
-        Save and Exit
-      </Button>
-      <AddRoutineItemModal
-        isOpen={isAddRoutineItemModalOpen}
-        onClose={() => setIsAddRoutineItemModalOpen(false)}
-        onAdd={addRoutineItem}
-        savedActivities={savedActivities}
-        savedTags={savedTags}
-      />
-      <AddChoreModal
-        isOpen={isAddChoreModalOpen}
-        onClose={() => setIsAddChoreModalOpen(false)}
-        onAdd={addChore}
-        savedActivities={savedActivities}
-        savedTags={savedTags}
-      />
-    </div>
-  )
-}
 
+      {/* Preview Card */}
+      <Card className="p-4 bg-muted/50">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <h3 className="font-semibold">{name || "Untitled Routine"}</h3>
+            <p className="text-sm text-muted-foreground">
+              {Object.values(routine.routine).reduce(
+                (acc, day) => acc + day.routineItems.length,
+                0
+              )}{" "}
+              activities,{" "}
+              {Object.values(routine.routine).reduce(
+                (acc, day) => acc + day.tasks.length,
+                0
+              )}{" "}
+              tasks
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Routine Template */}
+      <div className="bg-muted/30 rounded-lg p-4">
+        <RoutineTemplate
+          routine={routine}
+          onRoutineChange={handleRoutineChange}
+        />
+      </div>
+    </div>
+  );
+}

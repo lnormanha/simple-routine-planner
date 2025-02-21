@@ -1,39 +1,58 @@
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { X } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TagInputProps {
-  tags: string[]
-  onTagsChange: (tags: string[]) => void
-  savedTags: string[]
+  tags: string[];
+  onTagsChange: (tags: string[]) => void;
+  onAddTag: (tag: string) => void;
+  savedTags: string[];
 }
 
-export function TagInput({ tags, onTagsChange, savedTags }: TagInputProps) {
-  const [inputValue, setInputValue] = useState("")
-  const [showNewTagInput, setShowNewTagInput] = useState(false)
+export function TagInput({
+  tags,
+  onTagsChange,
+  onAddTag,
+  savedTags,
+}: TagInputProps) {
+  const [inputValue, setInputValue] = useState("");
+  const [showNewTagInput, setShowNewTagInput] = useState(false);
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
-      onTagsChange([...tags, tag])
-      setInputValue("")
-      setShowNewTagInput(false)
+      onTagsChange([...tags, tag]);
+      setInputValue("");
     }
-  }
+  };
 
   const removeTag = (tagToRemove: string) => {
-    onTagsChange(tags.filter((tag) => tag !== tagToRemove))
-  }
+    onTagsChange(tags.filter((tag) => tag !== tagToRemove));
+  };
 
   const handleTagChange = (value: string) => {
     if (value === "new") {
-      setShowNewTagInput(true)
+      setShowNewTagInput(true);
     } else {
-      addTag(value)
+      addTag(value);
     }
-  }
+  };
+
+  const handleAddTag = (tag: string) => {
+    if (tag && !savedTags.includes(tag)) {
+      onAddTag(tag);
+    }
+
+    addTag(tag);
+  };
 
   return (
     <div className="space-y-2">
@@ -59,12 +78,19 @@ export function TagInput({ tags, onTagsChange, savedTags }: TagInputProps) {
               placeholder="Add a new tag"
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
-                  e.preventDefault()
-                  addTag(inputValue)
+                  e.preventDefault();
+                  handleAddTag(inputValue);
                 }
               }}
             />
-            <Button onClick={() => addTag(inputValue)}>Add</Button>
+            <Button onClick={() => handleAddTag(inputValue)}>Add</Button>
+            <Button
+              className=" w-10 h-10"
+              variant="destructive"
+              onClick={() => setShowNewTagInput(false)}
+            >
+              <X size={32} className="text-destructive-foreground" />
+            </Button>
           </>
         )}
       </div>
@@ -72,13 +98,17 @@ export function TagInput({ tags, onTagsChange, savedTags }: TagInputProps) {
         {tags.map((tag) => (
           <Badge key={tag} variant="secondary">
             {tag}
-            <Button variant="ghost" size="sm" className="ml-2 h-4 w-4 p-0" onClick={() => removeTag(tag)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-2 h-4 w-4 p-0"
+              onClick={() => removeTag(tag)}
+            >
               <X className="h-3 w-3" />
             </Button>
           </Badge>
         ))}
       </div>
     </div>
-  )
+  );
 }
-

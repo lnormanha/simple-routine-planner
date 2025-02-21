@@ -1,118 +1,162 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRoutineStore } from "@/store/routineStore"
-import { RoutineCard } from "@/components/RoutineCard"
-import { ThemeToggle } from "@/components/ThemeToggle"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
-import { Edit, Plus, ArrowLeft } from "lucide-react"
-import { format, addDays, startOfWeek, isSameDay } from "date-fns"
-
-const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+import { useRoutinesStore } from "@/store/routines";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Plus, ChevronRight } from "lucide-react";
+import { Header } from "@/components/Header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { RoutinePreviewCard } from "@/components/RoutinePreviewCard";
+import { WeeklyGoals } from "@/components/WeeklyGoals";
+import { format, addDays } from "date-fns";
 
 export default function Home() {
-  const [selectedRoutine, setSelectedRoutine] = useState<string | null>(null)
-  const { routines, updateRoutine } = useRoutineStore()
+  const { routines, updateRoutine } = useRoutinesStore();
+  const defaultRoutine = routines.find((r) => r.isDefault);
 
-  const toggleChore = (day: string, choreId: string) => {
-    const routine = routines.find((r) => r.id === selectedRoutine)
-    if (routine) {
-      const updatedRoutine = {
-        ...routine,
-        routine: {
-          ...routine.routine,
-          [day]: {
-            ...routine.routine[day],
-            chores: routine.routine[day].chores.map((chore) =>
-              chore.id === choreId ? { ...chore, completed: !chore.completed } : chore,
-            ),
-          },
+  // Get today's and tomorrow's day names
+  const today = format(new Date(), "EEEE").toLowerCase();
+  const tomorrow = format(addDays(new Date(), 1), "EEEE").toLowerCase();
+
+  const handleTaskComplete = (taskId: string) => {
+    if (!defaultRoutine) return;
+
+    const updatedRoutine = {
+      ...defaultRoutine,
+      routine: {
+        ...defaultRoutine.routine,
+        [today]: {
+          ...defaultRoutine.routine[today],
+          tasks: defaultRoutine.routine[today].tasks.map((task) =>
+            task.id === taskId ? { ...task, completed: !task.completed } : task
+          ),
         },
-      }
-      updateRoutine(updatedRoutine)
-    }
+      },
+    };
+
+    updateRoutine(updatedRoutine);
+  };
+
+  if (!defaultRoutine) {
+    return (
+      <div className="container mx-auto p-4 min-h-screen">
+        <Header />
+        <div className="flex gap-4 pt-4">
+          <div className="flex flex-[0.7] flex-col text-center py-20">
+            <h2 className="text-2xl font-semibold mb-2">Welcome!</h2>
+            <p className="text-muted-foreground mb-6">
+              Get started by creating a routine or selecting an existing one as
+              your default schedule.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link href="/create-template">
+                <Button size="lg">
+                  <Plus className="mr-2 h-4 w-4" /> Create New Routine
+                </Button>
+              </Link>
+              <Link href="/routines">
+                <Button variant="outline" size="lg">
+                  View All Routines
+                </Button>
+              </Link>
+            </div>
+          </div>
+          {/* Weekly Goals */}
+          <div className="flex-[0.3]">
+            <WeeklyGoals />
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const selectedRoutineData = routines.find((r) => r.id === selectedRoutine)
-
-  const today = new Date()
-  const weekStart = startOfWeek(today)
+  const todayRoutine = defaultRoutine.routine[today];
+  const tomorrowRoutine = defaultRoutine.routine[tomorrow];
 
   return (
     <div className="container mx-auto p-4 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Routine Planner</h1>
-        <ThemeToggle />
-      </div>
-      {!selectedRoutine ? (
-        <>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold">Your Routines</h2>
-            <Link href="/create-template">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Create New Routine
+      <Header />
+      <div className="space-y-8 py-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-3xl font-bold">Your Current Routine</h2>
+            <p className="text-muted-foreground mt-1">
+              Following {defaultRoutine.name}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link href={`/detail/${defaultRoutine.id}`}>
+              <Button variant="secondary" size="lg">
+                View Full Schedule
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+            <Link href="/routines">
+              <Button variant="outline" size="lg">
+                Change Routine
               </Button>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {routines.map((routine) => (
-              <Card
-                key={routine.id}
-                className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
-                onClick={() => setSelectedRoutine(routine.id)}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle>{routine.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <p>
-                      Routine Items:{" "}
-                      {Object.values(routine.routine).reduce((sum, day) => sum + day.routineItems.length, 0)}
-                    </p>
-                    <p>Chores: {Object.values(routine.routine).reduce((sum, day) => sum + day.chores.length, 0)}</p>
-                  </div>
-                  <Link href={`/edit-template/${routine.id}`}>
-                    <Button variant="outline" className="w-full">
-                      <Edit className="mr-2 h-4 w-4" /> Edit Routine
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </>
-      ) : (
-        <>
-          <Button onClick={() => setSelectedRoutine(null)} className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Routines
-          </Button>
-          {selectedRoutineData && (
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">{selectedRoutineData.name}</h2>
-              <div className="flex overflow-x-auto pb-4 space-x-4">
-                {daysOfWeek.map((day, index) => {
-                  const currentDate = addDays(weekStart, index)
-                  return (
-                    <RoutineCard
-                      key={day}
-                      day={day}
-                      date={format(currentDate, "MMM d")}
-                      routineItems={selectedRoutineData.routine[day]?.routineItems || []}
-                      chores={selectedRoutineData.routine[day]?.chores || []}
-                      onChoreToggle={(choreId) => toggleChore(day, choreId)}
-                      isCurrentDay={isSameDay(currentDate, today)}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  )
-}
+        </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Today's Schedule */}
+          <Card className="p-6 ring-2 ring-primary/10 shadow-lg shadow-primary/10">
+            <CardHeader className="px-0 pb-4">
+              <CardTitle className="flex items-center gap-2">
+                <span className="capitalize">{today}</span>
+                <span className="text-xs bg-primary/20 text-primary font-medium px-2 py-1 rounded-full">
+                  Today
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-0">
+              <RoutinePreviewCard
+                routineItems={todayRoutine?.routineItems || []}
+                tasks={todayRoutine?.tasks || []}
+                onTaskComplete={handleTaskComplete}
+                isCurrentDay
+              />
+            </CardContent>
+          </Card>
+
+          {/* Tomorrow's Schedule */}
+          <Card className="p-6">
+            <CardHeader className="px-0 pb-4">
+              <CardTitle className="flex items-center gap-2">
+                <span className="capitalize">{tomorrow}</span>
+                <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+                  Tomorrow
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-0">
+              <RoutinePreviewCard
+                routineItems={tomorrowRoutine?.routineItems || []}
+                tasks={tomorrowRoutine?.tasks || []}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Weekly Goals */}
+          <Card className="p-6">
+            <CardHeader className="px-0 pb-4">
+              <div className="flex justify-between items-center">
+                <CardTitle>Weekly Goals</CardTitle>
+                <Link href="/goals">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    View all goals
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="px-0">
+              <WeeklyGoals />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

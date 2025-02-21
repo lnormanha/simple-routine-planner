@@ -1,93 +1,185 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import type { RoutineItem, Chore } from "@/types/routine"
-import { Clock, AlertCircle, Tag } from "lucide-react"
+import { Clock, Trash2 } from "lucide-react";
+import { RoutineItem, Task, WeekRoutine } from "@/types/routine";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Checkbox } from "./ui/checkbox";
+import { cn } from "@/lib/utils";
 
-interface RoutineCardProps {
-  day: string
-  date: string
-  routineItems: RoutineItem[]
-  chores: Chore[]
-  onChoreToggle: (choreId: string) => void
-  isCurrentDay: boolean
-}
+type RoutineCardProps = {
+  routine: WeekRoutine;
+  day: string;
+  items: RoutineItem[];
+  tasks: Task[];
+  onRoutineChange: (routine: WeekRoutine) => void;
+};
 
-export function RoutineCard({ day, date, routineItems, chores, onChoreToggle, isCurrentDay }: RoutineCardProps) {
-  const isEmpty = routineItems.length === 0 && chores.length === 0
+export const RoutineCard = ({
+  routine,
+  day,
+  items,
+  tasks,
+  onRoutineChange,
+}: RoutineCardProps) => {
+  const removeItem = (id: string) => {
+    onRoutineChange({
+      ...routine,
+      routine: {
+        ...routine.routine,
+        [day]: {
+          ...routine.routine[day],
+          routineItems: routine.routine[day].routineItems.filter(
+            (item) => item.id !== id
+          ),
+        },
+      },
+    });
+  };
+
+  const removeTask = (id: string) => {
+    onRoutineChange({
+      ...routine,
+      routine: {
+        ...routine.routine,
+        [day]: {
+          ...routine.routine[day],
+          tasks: routine.routine[day].tasks.filter((task) => task.id !== id),
+        },
+      },
+    });
+  };
+
+  const toggleTask = (id: string) => {
+    onRoutineChange({
+      ...routine,
+      routine: {
+        ...routine.routine,
+        [day]: {
+          ...routine.routine[day],
+          tasks: routine.routine[day].tasks.map((task) =>
+            task.id === id ? { ...task, completed: !task.completed } : task
+          ),
+        },
+      },
+    });
+  };
 
   return (
-    <Card
-      className={`w-[300px] flex-shrink-0 ${isCurrentDay ? "shadow-md shadow-primary/20" : "hover:shadow-sm hover:shadow-primary/10"} transition-shadow duration-300`}
-    >
-      <CardHeader className={`pb-2 ${isCurrentDay ? "bg-primary/10" : ""}`}>
-        <CardTitle>{day}</CardTitle>
-        <p className="text-sm text-muted-foreground">{date}</p>
-      </CardHeader>
+    <Card className="border-none shadow-none">
       <CardContent className="space-y-4">
-        {isEmpty ? (
-          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-            <AlertCircle className="w-8 h-8 mb-2" />
-            <p>No items or chores for this day</p>
-          </div>
-        ) : (
-          <>
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium">Routine Items</h3>
-              {routineItems.map((item) => (
-                <div key={item.id} className="flex flex-col space-y-1 bg-secondary/50 rounded-md p-2">
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-4 h-4 rounded-full ${item.color} flex-shrink-0`}></div>
-                    <Badge variant="secondary" className="w-16 justify-center">
-                      <Clock className="mr-1 h-3 w-3" />
-                      {item.time}
-                    </Badge>
-                    <span className="font-medium">{item.activity}</span>
+        {items.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Activities
+            </h3>
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className={cn(
+                  "flex items-center gap-4 p-3 rounded-lg",
+                  "bg-primary/5 hover:bg-primary/10 group transition-colors"
+                )}
+              >
+                <div className="w-20 text-sm font-medium">
+                  <Clock className="h-3 w-3 inline mr-1 text-muted-foreground" />
+                  {item.time}
+                </div>
+                <div className="flex-1">
+                  <div
+                    className={cn(
+                      "font-medium rounded-md px-2 py-1",
+                      item.color
+                    )}
+                  >
+                    {item.activity}
                   </div>
-                  {item.tags.length > 0 && (
-                    <div className="flex items-center space-x-1 ml-6">
-                      <Tag className="h-3 w-3" />
+                  {item.tags?.length > 0 && (
+                    <div className="flex gap-1 mt-1">
                       {item.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="text-[10px] px-1 py-0"
+                        >
                           {tag}
                         </Badge>
                       ))}
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium">Chores</h3>
-              {chores.map((chore) => (
-                <div key={chore.id} className="flex flex-col space-y-1 bg-secondary/50 rounded-md p-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox checked={chore.completed} onCheckedChange={() => onChoreToggle(chore.id)} />
-                    <Badge variant="secondary" className="w-16 justify-center">
-                      <Clock className="mr-1 h-3 w-3" />
-                      {chore.time}
-                    </Badge>
-                    <span className={`font-medium ${chore.completed ? "line-through text-muted-foreground" : ""}`}>
-                      {chore.task}
-                    </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                  onClick={() => removeItem(item.id)}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tasks.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground">Tasks</h3>
+            {tasks.map((task) => (
+              <div
+                key={task.id}
+                className={cn(
+                  "flex items-center gap-4 p-3 rounded-lg",
+                  "bg-secondary/10 hover:bg-secondary/20 group transition-colors"
+                )}
+              >
+                <Checkbox
+                  checked={task.completed}
+                  onCheckedChange={() => toggleTask(task.id)}
+                />
+                <div className="w-20 text-sm font-medium">
+                  <Clock className="h-3 w-3 inline mr-1 text-muted-foreground" />
+                  {task.time}
+                </div>
+                <div className="flex-1">
+                  <div
+                    className={cn("font-medium", {
+                      "line-through text-muted-foreground": task.completed,
+                    })}
+                  >
+                    {task.description}
                   </div>
-                  {chore.tags.length > 0 && (
-                    <div className="flex items-center space-x-1 ml-6">
-                      <Tag className="h-3 w-3" />
-                      {chore.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
+                  {task.tags?.length > 0 && (
+                    <div className="flex gap-1 mt-1">
+                      {task.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="text-[10px] px-1 py-0"
+                        >
                           {tag}
                         </Badge>
                       ))}
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
-          </>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                  onClick={() => removeTask(task.id)}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {items.length === 0 && tasks.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            No activities or tasks for this day
+          </div>
         )}
       </CardContent>
     </Card>
-  )
-}
-
+  );
+};

@@ -10,7 +10,7 @@ import type { WeekRoutine } from "@/types/routine";
 
 export default function EditTemplate({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { updateRoutine, activeRoutine } = useRoutinesStore();
+  const { updateRoutine, activeRoutine, setActiveRoutine } = useRoutinesStore();
   const [routine, setRoutine] = useState<WeekRoutine | null>(null);
   const [name, setName] = useState("");
 
@@ -34,12 +34,15 @@ export default function EditTemplate({ params }: { params: { id: string } }) {
       return;
     }
 
-    const updatedRoutine = {
+    const updatedRoutine: WeekRoutine = {
       ...routine,
       name: name.trim(),
+      isDefault: true,
     };
 
     updateRoutine(updatedRoutine);
+    setActiveRoutine(updatedRoutine);
+
     router.push("/");
   };
 
@@ -48,7 +51,7 @@ export default function EditTemplate({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="space-y-8 py-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Edit Routine Template</h1>
         <Button onClick={handleSave}>Save and Exit</Button>
@@ -70,6 +73,9 @@ export default function EditTemplate({ params }: { params: { id: string } }) {
 
       {/* Routine Template */}
       <div className="bg-muted/30 rounded-lg p-4">
+        <div>
+          <h2>Routine Preview</h2>
+        </div>
         <RoutineTemplate
           routine={routine}
           onRoutineChange={handleRoutineChange}

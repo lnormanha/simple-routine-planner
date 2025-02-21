@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTagsStore } from "@/store/tags";
 import { RoutineItem, WeekRoutine } from "@/types/routine";
+import { DAYS_OF_WEEK } from "@/constants/week";
 import {
   Dialog,
   DialogContent,
@@ -29,16 +30,6 @@ type AddActivityModalProps = {
   onOpenChange: (open: boolean) => void;
   onRoutineChange: (routine: WeekRoutine) => void;
 };
-
-const DAYS_OF_WEEK = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-];
 
 export const AddActivityModal = ({
   routine,
@@ -89,13 +80,14 @@ export const AddActivityModal = ({
   const handleSubmit = () => {
     if (newItem.time && newItem.activity) {
       const updatedRoutine = { ...routine };
+      const activityId = Date.now().toString(); // Generate a single ID for all instances
 
       selectedDays.forEach((selectedDay) => {
         updatedRoutine.routine[selectedDay] = {
           ...updatedRoutine.routine[selectedDay],
           routineItems: [
             ...(updatedRoutine.routine[selectedDay]?.routineItems || []),
-            { ...newItem, id: `${Date.now()}-${selectedDay}` } as RoutineItem,
+            { ...newItem, id: activityId } as RoutineItem,
           ].sort((a, b) => a.time.localeCompare(b.time)),
         };
       });
@@ -169,7 +161,19 @@ export const AddActivityModal = ({
 
           <div className="flex flex-col gap-4">
             <Label>Add to days:</Label>
-            <div className="flex flex-col  gap-2">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center space-x-2 pb-2 border-b">
+                <Checkbox
+                  id="select-all"
+                  checked={selectedDays.length === DAYS_OF_WEEK.length}
+                  onCheckedChange={(checked) => {
+                    setSelectedDays(checked ? [...DAYS_OF_WEEK] : []);
+                  }}
+                />
+                <Label htmlFor="select-all" className="font-medium">
+                  Select All Days
+                </Label>
+              </div>
               {DAYS_OF_WEEK.map((dayOfWeek) => (
                 <div key={dayOfWeek} className="flex items-center space-x-2">
                   <Checkbox

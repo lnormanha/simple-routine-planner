@@ -2,16 +2,27 @@ import { useState } from "react";
 import { useGoalsStore } from "@/store/goals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, ChevronRight } from "lucide-react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
+import Link from "next/link";
 
 interface WeeklyGoalsProps {
   weekStartDate?: Date;
+  showAllGoals?: boolean;
 }
 
-export const WeeklyGoals = ({ weekStartDate }: WeeklyGoalsProps) => {
+export const WeeklyGoals = ({
+  weekStartDate,
+  showAllGoals = false,
+}: WeeklyGoalsProps) => {
   const [newGoal, setNewGoal] = useState("");
   const { getCurrentWeekGoals, getWeekGoals, addGoal, toggleGoal, removeGoal } =
     useGoalsStore();
@@ -101,6 +112,16 @@ export const WeeklyGoals = ({ weekStartDate }: WeeklyGoalsProps) => {
           )}
         </div>
       </CardContent>
+      <CardFooter className="p-0">
+        {showAllGoals && (
+          <Link href="/goals">
+            <Button variant="ghost" size="sm" className="gap-2">
+              View all goals
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        )}
+      </CardFooter>
     </Card>
   );
 };

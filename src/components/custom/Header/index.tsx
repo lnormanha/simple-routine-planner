@@ -1,7 +1,7 @@
-import { Calendar, Search, Settings } from "lucide-react";
+import { Calendar, Command } from "lucide-react";
 import { ThemeToggle } from "../ThemeToggle";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Label } from "@/components/ui/label";
 
 export const Header = () => {
   return (
@@ -15,6 +15,12 @@ export const Header = () => {
 
           <nav className="hidden md:flex items-center gap-6">
             <Link
+              href="/routines"
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              Routines
+            </Link>
+            <Link
               href="/goals"
               className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
             >
@@ -24,10 +30,13 @@ export const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          <div className="flex items-center ">
+            <Command size={16} className="text-muted-foreground" />
+            <Label className="text-sm text-muted-foreground">
+              +K for command menu
+            </Label>
+          </div>
           <ThemeToggle />
-          <Button variant="ghost" size="icon">
-            <Settings className="h-5 w-5 text-muted-foreground" />
-          </Button>
         </div>
       </div>
     </div>

@@ -1,10 +1,19 @@
-import { Clock, Trash2 } from "lucide-react";
+import { Clock, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { RoutineItem, Task, WeekRoutine } from "@/types/routine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useState } from "react";
+import { EditActivityDialog } from "../../Dialogs/EditActivityDialog";
+import { DeleteActivityDialog } from "../../Dialogs/DeleteActivityDialog";
 
 type RoutineCardProps = {
   routine: WeekRoutine;
@@ -21,20 +30,12 @@ export const RoutineCard = ({
   tasks,
   onRoutineChange,
 }: RoutineCardProps) => {
-  const removeItem = (id: string) => {
-    onRoutineChange({
-      ...routine,
-      routine: {
-        ...routine.routine,
-        [day]: {
-          ...routine.routine[day],
-          routineItems: routine.routine[day].routineItems.filter(
-            (item) => item.id !== id
-          ),
-        },
-      },
-    });
-  };
+  const [editingActivity, setEditingActivity] = useState<RoutineItem | null>(
+    null
+  );
+  const [deletingActivity, setDeletingActivity] = useState<RoutineItem | null>(
+    null
+  );
 
   const removeTask = (id: string) => {
     onRoutineChange({
@@ -107,14 +108,27 @@ export const RoutineCard = ({
                     </div>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-                  onClick={() => removeItem(item.id)}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setEditingActivity(item)}>
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setDeletingActivity(item)}>
+                      <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
           </div>
@@ -128,27 +142,30 @@ export const RoutineCard = ({
                 key={task.id}
                 className={cn(
                   "flex items-center gap-4 p-3 rounded-lg",
-                  "bg-secondary/10 hover:bg-secondary/20 group transition-colors"
+                  "bg-primary/5 hover:bg-primary/10 group transition-colors"
                 )}
               >
-                <Checkbox
-                  checked={task.completed}
-                  onCheckedChange={() => toggleTask(task.id)}
-                />
                 <div className="w-20 text-sm font-medium">
                   <Clock className="h-3 w-3 inline mr-1 text-muted-foreground" />
                   {task.time}
                 </div>
-                <div className="flex-1">
-                  <div
-                    className={cn("font-medium", {
-                      "line-through text-muted-foreground": task.completed,
-                    })}
+                <div className="flex-1 flex items-center gap-2">
+                  <Checkbox
+                    id={task.id}
+                    checked={task.completed}
+                    onCheckedChange={() => toggleTask(task.id)}
+                    className="data-[state=checked]:bg-primary"
+                  />
+                  <label
+                    htmlFor={task.id}
+                    className={`flex-1 ${
+                      task.completed ? "line-through text-muted-foreground" : ""
+                    }`}
                   >
                     {task.description}
-                  </div>
+                  </label>
                   {task.tags?.length > 0 && (
-                    <div className="flex gap-1 mt-1">
+                    <div className="flex gap-1">
                       {task.tags.map((tag) => (
                         <Badge
                           key={tag}
@@ -178,6 +195,28 @@ export const RoutineCard = ({
           <div className="text-center py-8 text-muted-foreground">
             No activities or tasks for this day
           </div>
+        )}
+
+        {editingActivity && (
+          <EditActivityDialog
+            routine={routine}
+            day={day}
+            activity={editingActivity}
+            open={!!editingActivity}
+            onOpenChange={(open) => !open && setEditingActivity(null)}
+            onRoutineChange={onRoutineChange}
+          />
+        )}
+
+        {deletingActivity && (
+          <DeleteActivityDialog
+            routine={routine}
+            day={day}
+            activity={deletingActivity}
+            open={!!deletingActivity}
+            onOpenChange={(open) => !open && setDeletingActivity(null)}
+            onRoutineChange={onRoutineChange}
+          />
         )}
       </CardContent>
     </Card>

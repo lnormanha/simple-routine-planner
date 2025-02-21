@@ -25,9 +25,6 @@ export const RoutinePreviewCard = ({
 
   return (
     <div className={`space-y-2 ${isCurrentDay ? "relative" : ""}`}>
-      {isCurrentDay && (
-        <div className="absolute inset-[-1rem] rounded-lg bg-primary/5 pointer-events-none" />
-      )}
       {allItems.map((item) => (
         <div
           key={item.id}

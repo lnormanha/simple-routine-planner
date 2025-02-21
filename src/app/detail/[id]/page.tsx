@@ -2,12 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRoutinesStore } from "@/store/routines";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Header } from "@/components/custom/Header";
 import { RoutineTemplate } from "@/components/custom/RoutineTemplate";
-import { format } from "date-fns";
 import { WeekRoutine } from "@/types/routine";
 
 export default function RoutineDetail({ params }: { params: { id: string } }) {
@@ -25,9 +20,7 @@ export default function RoutineDetail({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div className="container mx-auto p-4 min-h-screen">
-      <Header />
-
+    <div className="space-y-8 py-4">
       <div className="bg-muted/30 rounded-lg p-4">
         <RoutineTemplate
           routine={routine}

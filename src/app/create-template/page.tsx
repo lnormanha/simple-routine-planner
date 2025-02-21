@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 
 export default function CreateTemplate() {
   const router = useRouter();
-  const { addRoutine } = useRoutinesStore();
+  const { addRoutine, routines, setActiveRoutine } = useRoutinesStore();
   const [name, setName] = useState("");
   const [routine, setRoutine] = useState<WeekRoutine>({
     id: Date.now().toString(),
@@ -37,6 +37,10 @@ export default function CreateTemplate() {
       name: name.trim(),
     };
 
+    if (routines.length === 0) {
+      setActiveRoutine(newRoutine);
+    }
+
     addRoutine(newRoutine);
     router.push("/");
   };
@@ -46,9 +50,14 @@ export default function CreateTemplate() {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="space-y-8 py-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Create New Routine Template</h1>
+        <div>
+          <h2 className="text-3xl font-bold">Create New Routine Template</h2>
+          <p className="text-muted-foreground mt-1">
+            Create a new routine template to use in your routine
+          </p>
+        </div>
         <Button onClick={handleSave}>Save and Exit</Button>
       </div>
 

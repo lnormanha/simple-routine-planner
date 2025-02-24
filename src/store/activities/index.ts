@@ -16,7 +16,7 @@ export const useActivitiesStore = create<ActivitiesStore>()(
     }),
     {
       name: "activities-storage",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

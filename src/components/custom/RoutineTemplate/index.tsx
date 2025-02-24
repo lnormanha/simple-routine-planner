@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRoutinesStore } from "@/store/routines";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MoreHorizontal, Plus } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { RoutineCard } from "@/components/custom/Cards/RoutineCard";
 import { AddActivityModal } from "@/components/custom/Dialogs/AddActivityDialog";
 import { AddTaskDialog } from "@/components/custom/Dialogs/AddTaskDialog";

@@ -15,7 +15,7 @@ export const useTagsStore = create<TagsStore>()(
     }),
     {
       name: "tags-storage",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

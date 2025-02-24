@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import type { WeekRoutine } from "@/src/types/routine";
+import type { WeekRoutine } from "@/types/routine";
 import { RoutinesStore } from "./types";
 
 export const useRoutinesStore = create<RoutinesStore>()(
@@ -27,7 +27,7 @@ export const useRoutinesStore = create<RoutinesStore>()(
     }),
     {
       name: "routine-storage",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

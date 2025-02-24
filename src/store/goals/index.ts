@@ -1,13 +1,7 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { WeeklyGoal } from "@/types/goals";
-import {
-  startOfWeek,
-  isSameWeek,
-  isAfter,
-  isBefore,
-  endOfWeek,
-} from "date-fns";
+import { startOfWeek, isSameWeek } from "date-fns";
 
 interface GoalsState {
   goals: WeeklyGoal[];
@@ -71,6 +65,7 @@ export const useGoalsStore = create<GoalsState>()(
     }),
     {
       name: "weekly-goals",
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );
